@@ -11,11 +11,11 @@
  *			http://www.chadchabot.com/
  */
 """
-
+import sys
 import os
 #   shared object library to talk with the C functions
 import Mx
-
+import psycopg2
 
 from Tkinter import *
 import tkMessageBox
@@ -40,28 +40,64 @@ import tkFileDialog
 #	test code
 ###################################
 
+#	get command line args for db connection
+args = sys.argv[1:]
+if len(args) == 1:
+    userName = args[0]
+    print userName
+    hostname = "db.socs.uoguelph.ca"
+    connectString = "host=" + hostname + " dbname=" + userName + " user=" + userName
+
+elif len(args) == 2:
+    userName = args[0]
+    hostname = args[1]
+    connectString = "host=" + hostname + " dbname=" + userName + " user=" + userName
+
+elif len(args) == 3:
+    userName = args[0]
+    hostname = args[1]
+    password = args[2]
+    connectString = "host=" + hostname + " dbname=" + userName + " user=" + userName + " password=" + password
+
+else:
+    #	error
+    print "Fatal error: Incorrect arguments supplied to altro.py."
+    sys.exit(1)
+#    connecting to db
+#	build connection string
+try:
+    #connection = psycopg2.connect( dbname=userName, host=hostname, user=userName )
+    connection = psycopg2.connect( str(connectString) )
+except psycopg2, e:
+    print str(e)
+    print "Fatal error: Unable to connect to database [" + hostname+ "] with username [" + userName + "]."
+    sys.exit(1)
+
+cur = connection.cursor()
+connection.set_isolation_level( psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT )
+#cur.execute( "INSERT INTO chad (name, age) VALUES ('eric', 33);" )
+#connection.commit()
+#cur.close()
+#connection.close()
+
 root = Tk()
 
 #	Global variables
-numberOfRecordsDisplayed = IntVar()
-numberOfRecordsDisplayed.set(0)
+numberOfRecords = 0
 
+recordPtr = None
 #	temporary file location
 tempFolder = "xsdTempFiles"
 tempDir = "./" + tempFolder + "/"
 
+listbox = None
 deleteButton = None
 undoButton = None
+statusBarText = StringVar()
 
 os.system( "mkdir " + tempFolder )
 
 xsdFile = StringVar()
-
-def callback( string ):
-    statusBarText.set( string )
-
-def updateStatusBar( string ):
-    statusBarText.set( string )
 
 
 #   HELP window
@@ -77,6 +113,8 @@ def showKeepDiscardWindow():
 		"Uses standard regex.h library search patterns.\n Usage: \"<field>=<regex>\"\nwhere <field> = a, p, or t, for author, publisher, or title, respectively.\n\n Examples: a=" )
 
 def openFile():
+	global numberOfRecords
+	global recordPtr
 	tempFileName =  tkFileDialog.askopenfilename(title="Open New XML File", filetypes=[("XML files", "*.xml"), ("Text files", "*.txt"), ("All Files", "*")], initialdir="./")
 	#	send tempFileName as input parameter to review ( how to disable user interaction with review function? )
 	#	the ordered records from review will populate the listbox in the main window
@@ -94,6 +132,8 @@ def openFile():
 		updateStatusBar( "There was an error selecting a file." )
 
 def appendFile():
+	global numberOfRecords
+	global recordPtr
 	tempFileName =  tkFileDialog.askopenfilename(title="Insert XML File", filetypes=[("XML files", "*.xml"), ("Text files", "*.txt"), ("All Files", "*")], initialdir="./")
 	if len( tempFileName ) == 0:
 		#	catch the cancel/ESCAPE key entered
@@ -113,6 +153,8 @@ def appendFile():
 
 
 def insertFile():
+	global numberOfRecords
+	global recordPtr
 	tempFileName =  tkFileDialog.askopenfilename(title="Insert XML File", filetypes=[("XML files", "*.xml"), ("Text files", "*.txt"), ("All Files", "*")], initialdir="./")
 	if len( tempFileName ) == 0:
 		#	catch the cancel/ESCAPE key entered
@@ -139,6 +181,8 @@ def exitApp():
 		#	then quit the python program.
 		os.system( "rm -r " + tempFolder )
 		Mx.term()
+		cur.close()
+		connection.close()
 		root.quit()
        
 def ok( self ):
@@ -189,6 +233,8 @@ def getEnvVar():
 		updateStatusBar( Mx.getEnvVar( str( xsdFile ) ) )
 
 def select( option ):
+	global numberOfRecords
+	global recordPtr
 	value = radioSelect.get()
 	if value == 1:
 		field = 'a'
@@ -224,6 +270,33 @@ def select( option ):
 	else:
 		#	wtf?
 		i = 1
+
+def updateStatusBar( string ):
+    statusBarText.set( string )
+
+def purgeDb():
+    userResponse = tkMessageBox.askyesno("Purge db?", "Are you sure that you want to purge all records from the database?")
+    if userResponse:
+	sqlCommand = "TRUNCATE TABLE bibrec"
+	cur.execute( sqlCommand )
+#	connection.commit()
+	updateStatusBar( "Database table [bibrec] has been purged of all entries." )
+
+def storeAllRecs():
+    global numberOfRecords
+    global recordPtr
+#    updateStatusBar( "storing [" + str( numberOfRecords ) + "] records" )
+    #	grab records from the most current version of top
+    for i in range( 0, numberOfRecords ):
+	( title, author, pubinfo, callnum ) = Mx.marc2bib( recordPtr, i )
+#	sqlCommand = "INSERT INTO bibrec (author,title,pubinfo,callnum) VALUES ('" + author + "','" + title + "','" + pubinfo + "','" + callnum + "');"
+#	cur.execute( sqlCommand )
+	cur.execute( "INSERT INTO bibrec (author,title,pubinfo,callnum) VALUES (%s,%s,%s,%s);", (author,title,pubinfo,callnum) )
+	#cur.execute( "INSERT INTO chad (name, age) VALUES ('eric', 33);" )
+
+    updateStatusBar( str( numberOfRecords ) + " stored to database" )
+
+
 
 #-------------------    start the GUI code  -------------------#
 min_x = 475
@@ -269,14 +342,14 @@ menubar.add_cascade( label = "Help", menu = helpmenu )
 
 #	DATABASE menubar item
 databasemenu = Menu( menubar, tearoff = 0 )
-databasemenu.add_command ( label = "Store all", command = callback () )
-databasemenu.add_command ( label = "Store Selected", command = callback () )
-databasemenu.add_command ( label = "Open", command = callback () )
-databasemenu.add_command ( label = "Insert", command = callback () )
-databasemenu.add_command ( label = "Append", command = callback () )
-databasemenu.add_command ( label = "Query", command = callback () )
+databasemenu.add_command ( label = "Store all", command = storeAllRecs )
+databasemenu.add_command ( label = "Store Selected", command = lambda: updateStatusBar( "db - store selected" ) )
+databasemenu.add_command ( label = "Open", command = lambda: updateStatusBar("db -  open" ) )
+databasemenu.add_command ( label = "Insert", command = lambda: updateStatusBar("db - insert") )
+databasemenu.add_command ( label = "Append", command = lambda: updateStatusBar( "db - append" ) )
+databasemenu.add_command ( label = "Query", command = lambda: updateStatusBar("db - query") )
 databasemenu.add_separator()
-databasemenu.add_command ( label = "Purge", command = callback () )
+databasemenu.add_command ( label = "Purge", command = purgeDb )
 menubar.add_cascade ( label = "Database", menu = databasemenu )
 
 root.config( menu = menubar )
@@ -326,9 +399,7 @@ controlPanel.pack( anchor=S, fill=BOTH )
 
 
 #	status bar
-statusBarText = StringVar()
 status = Label(root, height=3, textvariable=statusBarText, bd=1, relief=SUNKEN, anchor=S)
 status.pack(side=BOTTOM, fill=X)
-
 
 mainloop()
