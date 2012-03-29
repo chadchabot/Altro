@@ -11,6 +11,7 @@
  *			http://www.chadchabot.com/
  */
 """
+import re
 import sys
 import os
 #   shared object library to talk with the C functions
@@ -90,14 +91,23 @@ recordPtr = None
 tempFolder = "xsdTempFiles"
 tempDir = "./" + tempFolder + "/"
 
+
+class GUI:
+    def config():
+	  print "it works"
+
+databasemenu = None
 listbox = None
 deleteButton = None
+deleteButton = GUI()
 undoButton = None
 statusBarText = StringVar()
 
 os.system( "mkdir " + tempFolder )
 
 xsdFile = StringVar()
+
+
 
 
 #   HELP window
@@ -179,7 +189,7 @@ def exitApp():
 		#	check for all open/temp files, close any that are open.
 		#	free any open data structures by calling appropriate mxutil functions.
 		#	then quit the python program.
-		os.system( "rm -r " + tempFolder )
+		os.system( "rm -rf " + tempFolder )
 		Mx.term()
 		cur.close()
 		connection.close()
@@ -285,19 +295,77 @@ def purgeDb():
 def storeAllRecs():
     global numberOfRecords
     global recordPtr
+    recordsWritten = 0
 #    updateStatusBar( "storing [" + str( numberOfRecords ) + "] records" )
     #	grab records from the most current version of top
     for i in range( 0, numberOfRecords ):
 	( title, author, pubinfo, callnum ) = Mx.marc2bib( recordPtr, i )
 #	sqlCommand = "INSERT INTO bibrec (author,title,pubinfo,callnum) VALUES ('" + author + "','" + title + "','" + pubinfo + "','" + callnum + "');"
 #	cur.execute( sqlCommand )
-	cur.execute( "INSERT INTO bibrec (author,title,pubinfo,callnum) VALUES (%s,%s,%s,%s);", (author,title,pubinfo,callnum) )
-	#cur.execute( "INSERT INTO chad (name, age) VALUES ('eric', 33);" )
+	cur.execute( "SELECT * FROM bibrec WHERE author=%s AND title=%s;", (author,title) )
+	results = cur.fetchall()
+	if len(results) == 0:
+	    recordsWritten += 1
+	    pubCopy = pubinfo
+	    match = re.search(r"[0-9]{4}", pubCopy )
+	    if match:
+		year = match.group(0)
+	    else:
+		year = ""
+	    tempFileName = Mx.getRawXml( recordPtr, i )
+	    fp = open( tempFileName, "r" )
+	    xml = fp.read()
+	    fp.close()
+	    os.system( "rm -rf " + tempFileName )
+	    cur.execute( "INSERT INTO bibrec (author,title,pubinfo,callnum,year,xml) VALUES (%s,%s,%s,%s,%s,%s);", (author[:60],title[:120],pubinfo,callnum[:30],year,xml) ) 
+    updateStatusBar( str( recordsWritten ) + " stored to database" )
 
-    updateStatusBar( str( numberOfRecords ) + " stored to database" )
+def storeSelected():
+    global numberOfRecords
+    global recordPtr
+    recordsWritten = 0
+    #listCount = listbox.curselection()
+    listCount = map( int, listbox.curselection() )
+    for i in listCount:
+    #	grab records from the most current version of top
+	( title, author, pubinfo, callnum ) = Mx.marc2bib( recordPtr, i )
+#	sqlCommand = "INSERT INTO bibrec (author,title,pubinfo,callnum) VALUES ('" + author + "','" + title + "','" + pubinfo + "','" + callnum + "');"
+#	cur.execute( sqlCommand )
+	cur.execute( "SELECT * FROM bibrec WHERE author=%s AND title=%s;", (author,title) )
+	results = cur.fetchall()
+	if len(results) == 0:
+	    recordsWritten += 1
+	    pubCopy = pubinfo
+	    match = re.search(r"[0-9]{4}", pubCopy )
+	    if match:
+		year = match.group(0)
+	    else:
+		year = ""
+	    tempFileName = Mx.getRawXml( recordPtr, i )
+	    fp = open( tempFileName, "r" )
+	    xml = fp.read()
+	    fp.close()
+	    os.system( "rm -rf " + tempFileName )
+	    cur.execute( "INSERT INTO bibrec (author,title,pubinfo,callnum,year,xml) VALUES (%s,%s,%s,%s,%s,%s);", (author[:60],title[:120],pubinfo,callnum[:30],year,xml) )
+    updateStatusBar( str( recordsWritten ) + " stored to database" )
 
+def buttonState(variable):
+      global listbox
+      global deleteButton
+      listCount = listbox.curselection()
+      if listbox.size() > 0:
+	  databasemenu.entryconfig(0,state="normal")
+	  if len(listCount) != 0:
+	      deleteButton.config( state=NORMAL )
+	      databasemenu.entryconfig(1,state="normal")
+	  else:
+	      deleteButton.config( state=DISABLED )
+     	      databasemenu.entryconfig(1,state="disabled")
+      else:
+	  databasemenu.entryconfig(0,state="disabled")
+	  databasemenu.entryconfig(1,state="disabled")
 
-
+      
 #-------------------    start the GUI code  -------------------#
 min_x = 475
 min_y = 380
@@ -343,7 +411,7 @@ menubar.add_cascade( label = "Help", menu = helpmenu )
 #	DATABASE menubar item
 databasemenu = Menu( menubar, tearoff = 0 )
 databasemenu.add_command ( label = "Store all", command = storeAllRecs )
-databasemenu.add_command ( label = "Store Selected", command = lambda: updateStatusBar( "db - store selected" ) )
+databasemenu.add_command ( label = "Store Selected", command = storeSelected )
 databasemenu.add_command ( label = "Open", command = lambda: updateStatusBar("db -  open" ) )
 databasemenu.add_command ( label = "Insert", command = lambda: updateStatusBar("db - insert") )
 databasemenu.add_command ( label = "Append", command = lambda: updateStatusBar( "db - append" ) )
@@ -368,18 +436,19 @@ scrollbarHorizontal.pack( side=BOTTOM, fill=X )
 
 listbox.pack( anchor=N, fill=BOTH, expand=1 )
 listboxFrame.pack( anchor=N, fill=BOTH, expand=1 )
-
+listbox.bind('<Button-1>', buttonState )
 
 #	add regex input box
 #Label( controlPanel, text="REGEX pattern:").pack(side=LEFT, padx=5, pady=10 )
 
 #	add control panel radio buttons
 controlPanel = Frame( root, width=475, height = 50 )
+deleteButton = Button( controlPanel, text="Delete selected records", state=DISABLED, command=lambda: updateStatusBar('Delete button pressed') )
+deleteButton.pack( anchor=W )
 
-deleteButton = Button( controlPanel, text="Delete selected records", state=DISABLED, command=lambda: callback('Delete selected records') ).pack( anchor=W )
-#deleteButton.configure( state=DISABLED )
-undoButton = Button( controlPanel, text="UNDO last action", state=DISABLED, command=lambda: callback('UNDO last action') ).pack( anchor=W )
-#listbox.bind('<Button-1>', deleteState )
+undoButton = Button( controlPanel, text="UNDO last action", state=DISABLED, command=lambda: updateStatusBar('UNDO button pressed') )
+undoButton.pack( anchor=W )
+
 keepButton = Button( controlPanel, text="Keep pattern", state=NORMAL, command=lambda: select( 1 ) ).pack( anchor=E, side=TOP )
 discardButton = Button( controlPanel, text="Discard pattern", state=NORMAL, command=lambda: select( 0 ) ).pack( anchor=E, side=TOP )
 

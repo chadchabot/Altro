@@ -600,8 +600,8 @@ void printElem( XmElem * ep ){
 
 void printElemToFile( const XmElem *ep, FILE * output )
 {
-	int static depth=0;
-	int	subfield = 0;
+	int static 	depth=0;
+	int		subfield = 0;
 
 	for ( int i=0; i<depth; i++ ) fprintf( output, "\t" );
 	
@@ -611,9 +611,7 @@ void printElemToFile( const XmElem *ep, FILE * output )
 	else {
 		if ( 0 == strcmp( ep->tag, "subfield" ) || 0 == strcmp( ep->tag, "leader" ) || 0 == strcmp( ep->tag, "controlfield" ) )
 			subfield = 1;
-		// print tag, attributes, and text
-		
-		
+		// print tag, attributes, and text	
 		fprintf( output, "<marc:%s", ep->tag );
 		
 		for ( int i=0; i < ep->nattribs; i++ )

@@ -626,7 +626,7 @@ char *copyBufferOrDefaultString( char * buffer, const char * defaultString ){
 void printBibInfo( BibData bibInfo ){
 	//	TODO:	pre and post conditions; usage
 	printf( "title: [%s]\nauthor: [%s]\npubinfo: [%s]\ncallnum: [%s]\n",
-		   bibInfo[ TITLE ]		== NULL ? "NULL" : bibInfo[ TITLE ],
+		   bibInfo[ TITLE ]	== NULL ? "NULL" : bibInfo[ TITLE ],
 		   bibInfo[ AUTHOR ]	== NULL ? "NULL" : bibInfo[ AUTHOR ],
 		   bibInfo[ PUBINFO ]	== NULL ? "NULL" : bibInfo[ PUBINFO ],
 		   bibInfo[ CALLNUM ]	== NULL ? "NULL" : bibInfo[ CALLNUM ]);

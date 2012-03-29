@@ -194,7 +194,7 @@ PyObject * Mx_select ( PyObject * self, PyObject * args ){
 	int functionStatus = 0;
 	FILE * outFile = fopen( "xsdTempFiles/selectTemp.xml", "w" );
 	PyArg_ParseTuple( args, "cs", &selector, &pattern );
-	printf( "[%c] and [%s]\n", selector, pattern );
+//	printf( "[%c] and [%s]\n", selector, pattern );
 	
 	if ( selector == 'k' ){
 		functionStatus = selects( top, KEEP, pattern, outFile );
@@ -205,6 +205,17 @@ PyObject * Mx_select ( PyObject * self, PyObject * args ){
 	fclose( outFile );
 	return Py_BuildValue ( "is", functionStatus, "xsdTempFiles/selectTemp.xml" );
 
+}
+
+PyObject * Mx_getRawXml ( PyObject * self, PyObject * args ){
+	FILE * tempFile = fopen("xsdTempFiles/rawXmlTemp.xml", "w");
+	XmElem * mrec;
+	int recno;
+	PyArg_ParseTuple( args, "ki", (unsigned long * ) &mrec, &recno );
+//	void printElemToFile( const XmElem *ep, FILE * output )
+	printElemToFile( (* mrec->subelem )[recno], tempFile );
+	fclose( tempFile );
+	return Py_BuildValue ( "s", "xsdTempFiles/rawXmlTemp.xml" );
 }
 
 /*
@@ -246,6 +257,9 @@ static PyMethodDef MxMethods[] = {
 	},
 	{
 		"select", Mx_select, METH_VARARGS
+	},
+	{
+		"getRawXml", Mx_getRawXml, METH_VARARGS
 	},
 	{
 		NULL, NULL

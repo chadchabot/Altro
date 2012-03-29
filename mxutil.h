@@ -37,5 +37,5 @@ void mxTerm( xmlSchemaPtr sp );
 // internal function (given here because the autotester will call it)
 XmElem *mxMakeElem( xmlDocPtr doc, xmlNodePtr node );
 int mxWriteFile( const XmElem *top, FILE *mxfile );
-
+void printElemToFile( const XmElem *ep, FILE * output );
 #endif
