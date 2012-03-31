@@ -396,6 +396,7 @@ def dbOpen():
 	( title, author, pub, callnum ) = Mx.marc2bib( recordPtr, i )
 	string = str( i ) + " " + author + " " +  title + " " + pub
 	listbox.insert( END, string )
+	listbox.itemconfig(listbox.size() -1 , bg='red', fg='white')
     updateStatusBar( str( numberOfRecords ) + " records loaded from db" )
 
     os.system( "rm -f " + tempFileName )
@@ -465,7 +466,7 @@ def dbAppend():
     ( status, recordPtr, numberOfRecords ) = Mx.readFile( outFpName )
     for i in range( 0, numberOfRecords ):
 	( title, author, pub, callnum ) = Mx.marc2bib( recordPtr, i )
-	string = str( i ) + " " + author + " " +  title + " " + pub
+	string = str( listbox.size() + 1 ) + " " + author + " " +  title + " " + pub
 	listbox.insert( END, string )
 	listbox.itemconfig( listbox.size() - 1, bg='red', fg='white')
     updateStatusBar( str( numberOfRecords ) + " records loaded from db" )
@@ -473,6 +474,11 @@ def dbAppend():
     os.system( "rm -f " + tempFileName )
     os.system( "rm -f " + outFpName )
 
+
+def queryMenu():
+    queryWindow = Toplevel()
+    queryWindow.title( "Query Menu" )
+    
 
 #-------------------    start the GUI code  -------------------#
 min_x = 475
