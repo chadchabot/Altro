@@ -45,7 +45,6 @@ import tkFileDialog
 args = sys.argv[1:]
 if len(args) == 1:
     userName = args[0]
-    print userName
     hostname = "db.socs.uoguelph.ca"
     connectString = "host=" + hostname + " dbname=" + userName + " user=" + userName
 
@@ -92,14 +91,14 @@ tempFolder = "xsdTempFiles"
 tempDir = "./" + tempFolder + "/"
 
 
-class GUI:
-    def config():
-	  print "it works"
+#class GUI:
+#    def config():
+#	  print "it works"
 
 databasemenu = None
 listbox = None
 deleteButton = None
-deleteButton = GUI()
+#	deleteButton = GUI()
 undoButton = None
 statusBarText = StringVar()
 
@@ -189,7 +188,7 @@ def exitApp():
 		#	check for all open/temp files, close any that are open.
 		#	free any open data structures by calling appropriate mxutil functions.
 		#	then quit the python program.
-		os.system( "rm -rf " + tempFolder )
+		os.system( "rm -rf " + tempFolder + "/" )
 		Mx.term()
 		cur.close()
 		connection.close()
@@ -365,7 +364,116 @@ def buttonState(variable):
 	  databasemenu.entryconfig(0,state="disabled")
 	  databasemenu.entryconfig(1,state="disabled")
 
-      
+
+def dbOpen():
+    #
+    tempFileName = tempFolder + "/dbOpenTemp.xml"
+    tempFp = open( tempFileName, "w" )
+    cur.execute( "SELECT xml FROM bibrec ORDER BY author, title;" )
+    results = cur.fetchall()
+    for rec in results:
+	tempFp.write( rec[0] )
+    #	for line in file, preface each line with "\t"
+    tempFp.close()
+    outFpName = tempFolder + "/dbtemp.xml"
+    outFp = open( outFpName, "w+" )
+    outFp.write( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" )
+    outFp.write( "<!-- Output by mxutil library ( Chad Chabot ) -->\r\n" )
+    outFp.write( "<marc:collection xmlns:marc=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim\nhttp://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">\n" )
+
+    tempFp = open( tempFileName,"r")
+    tempLines = tempFp.readlines()
+    for line in tempLines:
+	#	get line and append "\t"
+	outFp.write( "\t" + line )
+
+    outFp.write( "</marc:collection>\n" )
+    outFp.close()
+
+    ( status, recordPtr, numberOfRecords ) = Mx.readFile( outFpName )
+    listbox.delete( 0, END )
+    for i in range( 0, numberOfRecords ):
+	( title, author, pub, callnum ) = Mx.marc2bib( recordPtr, i )
+	string = str( i ) + " " + author + " " +  title + " " + pub
+	listbox.insert( END, string )
+    updateStatusBar( str( numberOfRecords ) + " records loaded from db" )
+
+    os.system( "rm -f " + tempFileName )
+    os.system( "rm -f " + outFpName )
+
+def dbInsert():
+    #
+    tempFileName = tempFolder + "/dbOpenTemp.xml"
+    tempFp = open( tempFileName, "w" )
+    cur.execute( "SELECT xml FROM bibrec ORDER BY author, title;" )
+    results = cur.fetchall()
+    for rec in results:
+	tempFp.write( rec[0] )
+    #	for line in file, preface each line with "\t"
+    tempFp.close()
+    outFpName = tempFolder + "/dbtemp.xml"
+    outFp = open( outFpName, "w+" )
+    outFp.write( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" )
+    outFp.write( "<!-- Output by mxutil library ( Chad Chabot ) -->\r\n" )
+    outFp.write( "<marc:collection xmlns:marc=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim\nhttp://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">\n" )
+
+    tempFp = open( tempFileName,"r")
+    tempLines = tempFp.readlines()
+    for line in tempLines:
+	#	get line and append "\t"
+	outFp.write( "\t" + line )
+
+    outFp.write( "</marc:collection>\n" )
+    outFp.close()
+
+    ( status, recordPtr, numberOfRecords ) = Mx.readFile( outFpName )
+    for i in range( 0, numberOfRecords ):
+	( title, author, pub, callnum ) = Mx.marc2bib( recordPtr, i )
+	string = str( i ) + " " + author + " " +  title + " " + pub
+	listbox.insert( 0, string )
+	listbox.itemconfig(0, bg='red', fg='white')
+    updateStatusBar( str( numberOfRecords ) + " records loaded from db" )
+
+    os.system( "rm -f " + tempFileName )
+    os.system( "rm -f " + outFpName )
+
+def dbAppend():
+    #
+    tempFileName = tempFolder + "/dbOpenTemp.xml"
+    tempFp = open( tempFileName, "w" )
+    cur.execute( "SELECT xml FROM bibrec ORDER BY author, title;" )
+    results = cur.fetchall()
+    for rec in results:
+	tempFp.write( rec[0] )
+    #	for line in file, preface each line with "\t"
+    tempFp.close()
+    outFpName = tempFolder + "/dbtemp.xml"
+    outFp = open( outFpName, "w+" )
+    outFp.write( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" )
+    outFp.write( "<!-- Output by mxutil library ( Chad Chabot ) -->\r\n" )
+    outFp.write( "<marc:collection xmlns:marc=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim\nhttp://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">\n" )
+
+    tempFp = open( tempFileName,"r")
+    tempLines = tempFp.readlines()
+    for line in tempLines:
+	#	get line and append "\t"
+	outFp.write( "\t" + line )
+
+    outFp.write( "</marc:collection>\n" )
+    outFp.close()
+
+    ( status, recordPtr, numberOfRecords ) = Mx.readFile( outFpName )
+    for i in range( 0, numberOfRecords ):
+	( title, author, pub, callnum ) = Mx.marc2bib( recordPtr, i )
+	string = str( i ) + " " + author + " " +  title + " " + pub
+	listbox.insert( END, string )
+	listbox.itemconfig( listbox.size() - 1, bg='red', fg='white')
+    updateStatusBar( str( numberOfRecords ) + " records loaded from db" )
+
+    os.system( "rm -f " + tempFileName )
+    os.system( "rm -f " + outFpName )
+
+
 #-------------------    start the GUI code  -------------------#
 min_x = 475
 min_y = 380
@@ -412,9 +520,9 @@ menubar.add_cascade( label = "Help", menu = helpmenu )
 databasemenu = Menu( menubar, tearoff = 0 )
 databasemenu.add_command ( label = "Store all", command = storeAllRecs )
 databasemenu.add_command ( label = "Store Selected", command = storeSelected )
-databasemenu.add_command ( label = "Open", command = lambda: updateStatusBar("db -  open" ) )
-databasemenu.add_command ( label = "Insert", command = lambda: updateStatusBar("db - insert") )
-databasemenu.add_command ( label = "Append", command = lambda: updateStatusBar( "db - append" ) )
+databasemenu.add_command ( label = "Open", command = dbOpen )
+databasemenu.add_command ( label = "Insert", command = dbInsert )
+databasemenu.add_command ( label = "Append", command = dbAppend )
 databasemenu.add_command ( label = "Query", command = lambda: updateStatusBar("db - query") )
 databasemenu.add_separator()
 databasemenu.add_command ( label = "Purge", command = purgeDb )
