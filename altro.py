@@ -648,7 +648,7 @@ def helpWindow():
 
 def enterPressed( variable ):
 	global querySelect
-    submitQuery( querySelect.get() )
+	submitQuery( querySelect.get() )
 
 def clearField( event ):
     #print "clearField called"
