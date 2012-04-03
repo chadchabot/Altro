@@ -111,7 +111,6 @@ xsdFile = StringVar()
 ##### queryWindow globals
 querySelect = IntVar()
 textArea = None
-querySelect = None
 eb1 = None
 eb2 = None
 eb3 = None
