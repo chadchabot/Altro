@@ -676,11 +676,11 @@ queryWindow.title( "Query Menu" )
 
 #   NOTE:   add back 'takefocus=0' if the radiobuttons aren't part of the tab sequence
 #           how to have radiobuttons show their highlightcolor or highlightbackground when they have focus?
-Radiobutton( queryWindow, text="1", value=1, variable=querySelect, command=lambda: changeFocus( eb1 ), takefocus=0 )
-Radiobutton( queryWindow, text="2", value=2, variable=querySelect, command=lambda: changeFocus( eb2 ), takefocus=0 )
-Radiobutton( queryWindow, text="3", value=3, variable=querySelect, command=lambda: changeFocus( eb3 ), takefocus=0 )
-Radiobutton( queryWindow, text="4", value=4, variable=querySelect, command=lambda: changeFocus( eb4 ), takefocus=0 )
-Radiobutton( queryWindow, text="5", value=5, variable=querySelect, command=lambda: changeFocus( eb5), takefocus=0 )
+rb1 = Radiobutton( queryWindow, text="1", value=1, variable=querySelect, command=lambda: changeFocus( eb1 ), takefocus=0 )
+rb2 = Radiobutton( queryWindow, text="2", value=2, variable=querySelect, command=lambda: changeFocus( eb2 ), takefocus=0 )
+rb3 = Radiobutton( queryWindow, text="3", value=3, variable=querySelect, command=lambda: changeFocus( eb3 ), takefocus=0 )
+rb4 = Radiobutton( queryWindow, text="4", value=4, variable=querySelect, command=lambda: changeFocus( eb4 ), takefocus=0 )
+rb5 = Radiobutton( queryWindow, text="5", value=5, variable=querySelect, command=lambda: changeFocus( eb5), takefocus=0 )
 querySelect.set( 1 )
 
 
