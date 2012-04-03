@@ -648,8 +648,7 @@ def helpWindow():
 
 def enterPressed( variable ):
 	global querySelect
-#	submitQuery( querySelect.get() )
-	submitQuery( variable )
+	submitQuery( querySelect.get() )
 
 def clearField( event ):
     #print "clearField called"
@@ -725,7 +724,7 @@ eb5.grid( row=5, column=2 )
 
 submitButton = Button( queryWindow, text="Submit SQL query", state=NORMAL, command=lambda: submitQuery( querySelect.get() ), takefocus=0 )
 submitButton.grid( row=6, column=0, columnspan=3, sticky=N+S+E+W, pady=5)
-queryWindow.bind( '<Return>', lambda: enterPressed( querySelect.get() ) )
+queryWindow.bind( '<Return>', enterPressed )
 queryWindow.bind( '<Key-Escape>', clearField )
 queryWindow.protocol( "WM_DELETE_WINDOW", closeWindow )
 
