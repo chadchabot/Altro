@@ -660,6 +660,18 @@ def clearField( event ):
     print "focus is:", queryWindow.focus_get()
     eb1.delete( 0, END )
 
+def windowState():
+    global queryWindow
+    if queryWindow.state() == "withdrawn":
+        print "it is withdrawn!"
+    elif queryWindow.state() == "normal":
+        print "it is visible!"
+
+def closeWindow():
+    global queryWindow
+    print "Closing window"
+    queryWindow.withdraw()
+
 queryWindow = Tk()
 queryWindow.resizable(0,0)
 queryWindow.title( "Query Menu" )
@@ -744,17 +756,6 @@ clearButton.grid( row=8, column=0, columnspan=3, padx=5, pady=5 )
 
 eb1.focus_set()
 
-def windowState():
-    global queryWindow
-    if queryWindow.state() == "withdrawn":
-        print "it is withdrawn!"
-    elif queryWindow.state() == "normal":
-        print "it is visible!"
-
-def closeWindow():
-    global queryWindow
-    print "Closing window"
-    queryWindow.withdraw()
 
 
 #	code for queryWindow END
