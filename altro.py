@@ -626,6 +626,7 @@ def clearPanel():
 
 def changeFocus( entryBoxChoice ):
 	entryBoxChoice.focus_set()
+
 """
     global eb1, eb2, eb3, eb4, eb5
     if choice == 1:
