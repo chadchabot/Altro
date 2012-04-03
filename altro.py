@@ -602,9 +602,9 @@ status.pack(side=BOTTOM, fill=X)
 
 #	code for queryWindow BEGIN
 
-def callback( option ):
+def submitQuery( option ):
     global textArea
-    global querySelect
+#    global querySelect
 #    textArea.config( state=NORMAL )
 #    option = querySelect.get()
     if option == 1:
@@ -653,7 +653,8 @@ def helpWindow():
         "The database is structured as follows:\n\nTable name:\n\tbibrec\nColumns:\n\trec_id\t| primary key\n\tauthor\t| author name\n\ttitle\t\t| publication title\n\tpubinfo\t| publisher information\n\tcallnum\t| library reference #\n\tyear\t| year of publishing\n\txml\t\t| raw xml of MARC21 record" )
 
 def enterPressed( variable ):
-    callback( variable )
+	global querySelect
+    submitQuery( querySelect.get() )
 
 def clearField( event ):
     #print "clearField called"
@@ -727,7 +728,7 @@ rb5.grid( row=5, column=0 )
 lb5.grid( row=5, column=1 )
 eb5.grid( row=5, column=2 )
 
-submitButton = Button( queryWindow, text="Submit SQL query", state=NORMAL, command=lambda: callback( querySelect.get() ), takefocus=0 )
+submitButton = Button( queryWindow, text="Submit SQL query", state=NORMAL, command=lambda: submitQuery( querySelect.get() ), takefocus=0 )
 submitButton.grid( row=6, column=0, columnspan=3, sticky=N+S+E+W)
 queryWindow.bind( '<Return>', enterPressed )
 queryWindow.bind( '<Key-Escape>', clearField )
