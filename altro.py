@@ -602,11 +602,11 @@ status.pack(side=BOTTOM, fill=X)
 
 #	code for queryWindow BEGIN
 
-def callback( event ):
+def callback( option ):
     global textArea
     global querySelect
 #    textArea.config( state=NORMAL )
-    option = querySelect.get()
+#    option = querySelect.get()
     if option == 1:
         if len( eb1.get() ) != 0 :
             sqlcmd = "SELECT * FROM bibrec WHERE author=" + eb1.get() + " ORDER BY author, title;"
@@ -724,7 +724,7 @@ rb5.grid( row=5, column=0 )
 lb5.grid( row=5, column=1 )
 eb5.grid( row=5, column=2 )
 
-submitButton = Button( queryWindow, text="Submit SQL query", state=NORMAL, command=lambda: callback( querySelect ), takefocus=0 )
+submitButton = Button( queryWindow, text="Submit SQL query", state=NORMAL, command=lambda: callback( querySelect.get() ), takefocus=0 )
 submitButton.grid( row=6, column=0, columnspan=3, sticky=N+S+E+W)
 queryWindow.bind( '<Return>', enterPressed )
 queryWindow.bind( '<Key-Escape>', clearField )
