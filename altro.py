@@ -599,7 +599,7 @@ def submitQuery( option ):
     global textArea
 #    global querySelect
 #    textArea.config( state=NORMAL )
-#    option = querySelect.get()
+	print querySelect.get()
     if option == 1:
         if len( eb1.get() ) != 0 :
             sqlcmd = "SELECT * FROM bibrec WHERE author=" + eb1.get() + " ORDER BY author, title;"
