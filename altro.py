@@ -655,10 +655,10 @@ def enterPressed( variable ):
     callback( variable )
 
 def clearField( event ):
-    print "clearField called"
+    #print "clearField called"
     global queryWindow, eb1 
-    print "return: event.widget is",event.widget
-    print "focus is:", queryWindow.focus_get()
+    #print "return: event.widget is",event.widget
+    #print "focus is:", queryWindow.focus_get()
     eb1.delete( 0, END )
 
 def windowState():
@@ -680,34 +680,21 @@ queryWindow.title( "Query Menu" )
 
 #   NOTE:   add back 'takefocus=0' if the radiobuttons aren't part of the tab sequence
 #           how to have radiobuttons show their highlightcolor or highlightbackground when they have focus?
-rb1 = Radiobutton( queryWindow, text="1", value=1, variable=querySelect, command=changeFocus, takefocus=0 )
+rb1 = Radiobutton( queryWindow, text="Find books", value=1, variable=querySelect, command=changeFocus, takefocus=0 )
 rb2 = Radiobutton( queryWindow, text="2", value=2, variable=querySelect, command=changeFocus, takefocus=0 )
 rb3 = Radiobutton( queryWindow, text="3", value=3, variable=querySelect, command=changeFocus, takefocus=0 )
 rb4 = Radiobutton( queryWindow, text="4", value=4, variable=querySelect, command=changeFocus, takefocus=0 )
 rb5 = Radiobutton( queryWindow, text="5", value=5, variable=querySelect, command=changeFocus, takefocus=0 )
 querySelect.set( 1 )
 
-"""
-regexString = StringVar()
-Entry( controlPanel, bg="white", width=40, textvariable=regexString ).pack( anchor=W )
-regexString.set( "type regex here" )
-"""
-
-
-"""
-def handleReturn(event):
-...     print "return: event.widget is",event.widget
-...     print "focus is:",root.focus_get()
-"""
 
 eb1 = Entry( queryWindow, bg="white" )
 eb2 = Entry( queryWindow, bg="white" )
 eb3 = Entry( queryWindow, bg="white" )
 eb4 = Entry( queryWindow, bg="white" )
 eb5Text = StringVar()
-eb5Text.set( "SELECT " )
 eb5 = Entry( queryWindow, bg="white", textvariable=eb5Text )
-#eb5.see(END)
+eb5Text.set( "SELECT " )
 
 lb1 = Label( queryWindow, text="Find all books by author:" )
 lb2 = Label( queryWindow, text="How many books were published since the year: " )
