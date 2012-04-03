@@ -107,7 +107,7 @@ xsdFile = StringVar()
 
 ##### queryWindow globals
 queryWindow = None
-querySelect = IntVar()
+querySelect = None
 textArea = None
 eb1 = None
 eb2 = None
@@ -674,6 +674,7 @@ queryWindow.resizable(0,0)
 queryWindow.title( "Query Menu" )
 # four radio buttons
 
+querySelect = IntVar()
 #   NOTE:   add back 'takefocus=0' if the radiobuttons aren't part of the tab sequence
 #           how to have radiobuttons show their highlightcolor or highlightbackground when they have focus?
 rb1 = Radiobutton( queryWindow, text="1", value=1, variable=querySelect, command=lambda: changeFocus( eb1 ), takefocus=0 )
