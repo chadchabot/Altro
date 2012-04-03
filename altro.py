@@ -90,8 +90,6 @@ recordPtr = None
 tempFolder = "xsdTempFiles"
 tempDir = "./" + tempFolder + "/"
 
-queryWindow = None
-
 #class GUI:
 #    def config():
 #	  print "it works"
@@ -107,8 +105,8 @@ os.system( "mkdir " + tempFolder )
 
 xsdFile = StringVar()
 
-
 ##### queryWindow globals
+queryWindow = None
 querySelect = IntVar()
 textArea = None
 eb1 = None
@@ -488,11 +486,6 @@ def showQueryWindow():
 	if queryWindow.state() == "withdrawn":
 		#	show query window
 		queryWindow.deiconify()
-	
-
-
-
-
 
 
 #-------------------    start the GUI code  -------------------#
