@@ -644,7 +644,24 @@ def submitQuery( option ):
 		textArea.insert( END, rec[0] + " | " + str( rec[1] ) + "\n" )
     elif option == 4:
         sqlcmd = eb4.get()
-        
+        if len( sqlcmd ) == 0:
+	    try:
+		cur.execute( "SELECT MAX(year) AS myear, author FROM bibrec GROUP BY author ORDER BY myear desc;" )
+		results = cur.fetchall()
+		textArea.insert( END, "Year | Author\n---------------------------------------------\n" )
+		for rec in results:
+		      textArea.insert( END, str( rec[0] ) + " | " + str( rec[1] ) + "\n" )
+	    except:
+		textArea.insert( END, "\nThe sql command failed to be executed\n" )
+	else:
+	    try:
+		cur.execute( "SELECT MAX(year) AS myear, author FROM bibrec WHERE author like %s GROUP BY author;", ( '%'+eb4.get()+'%', ) )
+		results = cur.fetchall()
+		textArea.insert( END, "Year | Author\n---------------------------------------------\n" )
+		for rec in results:
+		      textArea.insert( END, str( rec[0] ) + " | " + str( rec[1] ) + "\n" )
+	    except:
+		textArea.insert( END, "\nThe sql command failed to be executed\n" )
     else:
         sqlcmd = eb5.get()
 	if len( eb5.get() ) != 0:
@@ -736,10 +753,10 @@ eb5Text = StringVar()
 eb5 = Entry( queryWindow, bg="white", textvariable=eb5Text )
 eb5Text.set( "SELECT " )
 
-lb1 = Label( queryWindow, text="Find all books by author:" )
+lb1 = Label( queryWindow, text="Find all books by author (blank is all):" )
 lb2 = Label( queryWindow, text="How many books were published since the year: " )
-lb3 = Label( queryWindow, text="List # of books by author(blank is all): " )
-lb4 = Label( queryWindow, text="Canned 4" )
+lb3 = Label( queryWindow, text="List # of books by author (blank is all): " )
+lb4 = Label( queryWindow, text="List most recent book by author ( blank is all authors):" )
 lb5 = Label( queryWindow, text="Enter any SQL command:" )
 
 helpButton = Button( queryWindow, text="Help", state=NORMAL, command=helpWindow, takefocus=0 )
