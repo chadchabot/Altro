@@ -607,7 +607,7 @@ def submitQuery( option ):
     global querySelect
     
 #    textArea.config( state=NORMAL )
-    print querySelect.get()
+    #print querySelect.get()
     if option == 1:
         if len( eb1.get() ) != 0:
             cur.execute( "SELECT author, title, year, pubinfo, callnum FROM bibrec WHERE author like %s;", ( '%'+eb1.get()+'%', ) )
@@ -629,24 +629,38 @@ def submitQuery( option ):
 	    textArea.insert( END, "\nNo year specified for search.\n" )
     elif option == 3:
 #        sqlcmd = eb3.get()
-        sqlcmd = "SELECT author, COUNT(title) FROM bibrec GROUP BY author;"
-        cur.execute( sqlcmd )
-	results = cur.fetchall()
-	textArea.insert( END, "Author\t\t\t\t| Number of books in database\n------------------------------------\n" )
-	for rec in results:
-	    textArea.insert( END, rec[0] + " | " + str( rec[1] ) + "\n" )
+	if len( eb3.get() ) == 0:
+	    sqlcmd = "SELECT author, COUNT(title) FROM bibrec GROUP BY author;"
+	    cur.execute( sqlcmd )
+	    results = cur.fetchall()
+	    textArea.insert( END, "Author\t\t| Number of books in database\n---------------------------------------------\n" )
+	    for rec in results:
+		textArea.insert( END, rec[0] + " | " + str( rec[1] ) + "\n" )
+	else:
+	    cur.execute( "SELECT author, COUNT(title) FROM bibrec WHERE author like %s GROUP BY author;", ( '%'+eb3.get()+'%', ) )
+	    results = cur.fetchall()
+	    textArea.insert( END, "Author\t\t| Number of books in database\n---------------------------------------------\n" )
+	    for rec in results:
+		textArea.insert( END, rec[0] + " | " + str( rec[1] ) + "\n" )
     elif option == 4:
         sqlcmd = eb4.get()
     else:
         sqlcmd = eb5.get()
 	if len( eb5.get() ) != 0:
 	    try:
-		cur.execute( "%s", ( eb5.get() ) )
+		#print str( eb5.get() )
+#		cur.execute( "%s", ( eb5.get(), ) )
+		cur.execute( sqlcmd )
 		results = cur.fetchall()
+		textArea.insert( END, "\n" )
+		for rec in results:
+		    for col in rec:
+			textArea.insert( END, col + " " )
+		    textArea.insert( END, "\n" )
 	    except:
 		textArea.insert( END, "\nYour sql command [" + eb5.get() + "] did not work. Try something else.\n" )
 	    
-	elif:
+	else:
 	    textArea.insert( END, "\nYour sql command is empty. Try again.\n" )
     
     #textArea.insert( END, "you chose " + str( option ) + " " + sqlcmd + "\n\\------------------------------------------------------------------------------/\n" )
@@ -662,20 +676,6 @@ def clearPanel():
 
 def changeFocus( entryBoxChoice ):
 	entryBoxChoice.focus_set()
-
-"""
-    global eb1, eb2, eb3, eb4, eb5
-    if choice == 1:
-        eb1.focus_set()
-    elif choice == 2:
-        eb2.focus_set()
-    elif choice == 3:
-        eb3.focus_set()
-    elif choice == 4:
-        eb4.focus_set()
-    elif choice == 5:
-        eb5.focus_set()
-"""
 
 def helpWindow():
     userResponse = tkMessageBox.showinfo(
@@ -731,7 +731,7 @@ eb5Text.set( "SELECT " )
 
 lb1 = Label( queryWindow, text="Find all books by author:" )
 lb2 = Label( queryWindow, text="How many books were published since the year: " )
-lb3 = Label( queryWindow, text="List authors and # of books: " )
+lb3 = Label( queryWindow, text="List # of books by author(blank is all): " )
 lb4 = Label( queryWindow, text="Canned 4" )
 lb5 = Label( queryWindow, text="Enter any SQL command:" )
 
@@ -769,7 +769,7 @@ scroller = Scrollbar( queryWindow, orient = VERTICAL )
 textArea = Text( queryWindow, width=80, height=30, wrap=WORD, borderwidth=5, relief=GROOVE, takefocus=0, yscrollcommand=scroller.set )
 textArea.grid( row=7, column=0, columnspan=3 )
 
-scroller.config( command=textArea.yview )
+scroller.config( command=textArea.yview, bg="blue" )
 scroller.grid( row=7, column=3, sticky=N+S+E+W )
 
 clearButton = Button( queryWindow, text="Clear result window", state=NORMAL, command=clearPanel, takefocus=0 )
