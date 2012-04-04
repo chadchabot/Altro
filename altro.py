@@ -644,6 +644,7 @@ def submitQuery( option ):
 		textArea.insert( END, rec[0] + " | " + str( rec[1] ) + "\n" )
     elif option == 4:
         sqlcmd = eb4.get()
+        
     else:
         sqlcmd = eb5.get()
 	if len( eb5.get() ) != 0:
@@ -652,10 +653,16 @@ def submitQuery( option ):
 #		cur.execute( "%s", ( eb5.get(), ) )
 		cur.execute( sqlcmd )
 		results = cur.fetchall()
+		colNames = [desc[0] for desc in cur.description]
+		for col in colNames:
+		    textArea.insert( END, "| " + col + " |" )
 		textArea.insert( END, "\n" )
 		for rec in results:
-		    for col in rec:
-			textArea.insert( END, col + " " )
+		    for i in range( 0, len(rec) ):
+			textArea.insert( END, "| " + str( rec[i] ) + " |" )
+#		    print str( len(rec) ) + "|" + str(rec[0]) + "|" + str(rec[1])
+		    #for col in rec:
+		#	textArea.insert( END, col + " " )
 		    textArea.insert( END, "\n" )
 	    except:
 		textArea.insert( END, "\nYour sql command [" + eb5.get() + "] did not work. Try something else.\n" )
@@ -766,7 +773,7 @@ queryWindow.bind( '<Key-Escape>', clearField )
 queryWindow.protocol( "WM_DELETE_WINDOW", closeWindow )
 
 scroller = Scrollbar( queryWindow, orient = VERTICAL )
-textArea = Text( queryWindow, width=80, height=30, wrap=WORD, borderwidth=5, relief=GROOVE, takefocus=0, yscrollcommand=scroller.set )
+textArea = Text( queryWindow, width=80, height=30, wrap=WORD, borderwidth=5, relief=GROOVE, takefocus=0, yscrollcommand=scroller.set, bg="white" )
 textArea.grid( row=7, column=0, columnspan=3 )
 
 scroller.config( command=textArea.yview, bg="blue" )
