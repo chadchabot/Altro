@@ -80,6 +80,13 @@ connection.set_isolation_level( psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT )
 #cur.close()
 #connection.close()
 
+
+
+try:
+    cur.execute( "CREATE TABLE bibrec ( rec_id SERIAL PRIMARY KEY, author VARCHAR(60), title VARCHAR(120), pubinfo TEXT, callnum VARCHAR(30), year SMALLINT, xml TEXT);" )
+except:
+    dummyVar = 1
+
 root = Tk()
 
 #	Global variables
@@ -598,23 +605,52 @@ status.pack(side=BOTTOM, fill=X)
 def submitQuery( option ):
     global textArea
     global querySelect
+    
 #    textArea.config( state=NORMAL )
     print querySelect.get()
     if option == 1:
-        if len( eb1.get() ) != 0 :
-            sqlcmd = "SELECT * FROM bibrec WHERE author=" + eb1.get() + " ORDER BY author, title;"
+        if len( eb1.get() ) != 0:
+            cur.execute( "SELECT author, title, year, pubinfo, callnum FROM bibrec WHERE author like %s;", ( '%'+eb1.get()+'%', ) )
         else:
-            sqlcmd = "nothing entered"
+            cur.execute( "SELECT author, title, year, pubinfo, callnum FROM bibrec;" )
+        results = cur.fetchall()
+        textArea.insert( END, "Author\t| Title\t| Year\t| Pubinfo\t| Callnum\n" )
+        i = 1
+        for rec in results:
+	    textArea.insert( END, "\nRecord #" + str(i) + "\n" + rec[0] + " | " + rec[1] + " | " + str(rec[2]) + " | " + rec[3] + " | " + rec[4] + "\n" )
+	    i += 1
     elif option == 2:
-        sqlcmd = "SELECT COUNT (year) FROM bibrec WHERE year >=" + eb2.get() +";"
+	if len( eb2.get() ) != 0:
+	    cur.execute( "SELECT COUNT(year) FROM bibrec WHERE year >= %s;", ( eb2.get(), ) )
+	    results = cur.fetchall()
+	    for rec in results:
+		textArea.insert( END, "\n" + str(rec[0]) + " books published since " + str(eb2.get()) + "\n" )
+	else:
+	    textArea.insert( END, "\nNo year specified for search.\n" )
     elif option == 3:
 #        sqlcmd = eb3.get()
         sqlcmd = "SELECT author, COUNT(title) FROM bibrec GROUP BY author;"
+        cur.execute( sqlcmd )
+	results = cur.fetchall()
+	textArea.insert( END, "Author\t\t\t\t| Number of books in database\n------------------------------------\n" )
+	for rec in results:
+	    textArea.insert( END, rec[0] + " | " + str( rec[1] ) + "\n" )
     elif option == 4:
         sqlcmd = eb4.get()
     else:
         sqlcmd = eb5.get()
-    textArea.insert( END, "you chose " + str( option ) + " " + sqlcmd + "\n\\------------------------------------------------------------------------------/\n" )
+	if len( eb5.get() ) != 0:
+	    try:
+		cur.execute( "%s", ( eb5.get() ) )
+		results = cur.fetchall()
+	    except:
+		textArea.insert( END, "\nYour sql command [" + eb5.get() + "] did not work. Try something else.\n" )
+	    
+	elif:
+	    textArea.insert( END, "\nYour sql command is empty. Try again.\n" )
+    
+    #textArea.insert( END, "you chose " + str( option ) + " " + sqlcmd + "\n\\------------------------------------------------------------------------------/\n" )
+    textArea.insert( END, "\n\n\\------------------------------------------------------------------------------/\n" )
     textArea.see( END )
 #    textArea.config( state=DISABLED )
 
@@ -644,7 +680,7 @@ def changeFocus( entryBoxChoice ):
 def helpWindow():
     userResponse = tkMessageBox.showinfo(
         "About db queries",
-        "The database is structured as follows:\n\nTable name:\n\tbibrec\nColumns:\n\trec_id\t| primary key\n\tauthor\t| author name\n\ttitle\t\t| publication title\n\tpubinfo\t| publisher information\n\tcallnum\t| library reference #\n\tyear\t| year of publishing\n\txml\t\t| raw xml of MARC21 record" )
+        "The database is structured as follows:\n\nTable name:\n\tbibrec\nColumns:\n  rec_id\n\t| primary key\n  author\n\t| author name\n  title\n\t| publication title\n  pubinfo\n\t| publisher information\n  callnum\n\t| library reference #\n  year\n\t| year of publishing\n  xml\n\t| raw xml record" )
 
 def enterPressed( variable ):
 	global querySelect
@@ -669,7 +705,7 @@ def closeWindow():
     # print "Closing queryWindow"
     queryWindow.withdraw()
 
-queryWindow = Tk()
+queryWindow = Toplevel()
 queryWindow.resizable(0,0)
 queryWindow.title( "Query Menu" )
 # four radio buttons
@@ -681,7 +717,7 @@ rb1 = Radiobutton( queryWindow, text="1", value=1, variable=querySelect, command
 rb2 = Radiobutton( queryWindow, text="2", value=2, variable=querySelect, command=lambda: changeFocus( eb2 ), takefocus=0 )
 rb3 = Radiobutton( queryWindow, text="3", value=3, variable=querySelect, command=lambda: changeFocus( eb3 ), takefocus=0 )
 rb4 = Radiobutton( queryWindow, text="4", value=4, variable=querySelect, command=lambda: changeFocus( eb4 ), takefocus=0 )
-rb5 = Radiobutton( queryWindow, text="5", value=5, variable=querySelect, command=lambda: changeFocus( eb5), takefocus=0 )
+rb5 = Radiobutton( queryWindow, text="5", value=5, variable=querySelect, command=lambda: changeFocus( eb5 ), takefocus=0 )
 querySelect.set( 1 )
 
 
