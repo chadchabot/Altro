@@ -10,6 +10,7 @@ It's meant to test students as coders, problem solvers, managers, and spec reade
 It is a course that historically has a very high crash-and-burn rate.
 
 There are four components to the assignment application:
+
 1.  utility layer – mxutil.c, written in C
 2.  I/O layer – mxtool.c, written in C
 3.  GUI – altro.py, written in Python using Tkinter
